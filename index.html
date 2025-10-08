@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CE4HOW "Taka ni Mali" - Kakamega Waste Management Map</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🌱 CE4HOW "Taka ni Mali" - Waste is Wealth</h1>
+                <p>Interactive Waste Management Map for Kakamega Municipality</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h2>Legend</h2>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background-color: #2ecc71;">📍</span>
+                        <span>Formal Waste Receptacle</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background-color: #e74c3c;">📍</span>
+                        <span>Informal Dumping Site</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background-color: #3498db;">📍</span>
+                        <span>Waste Processing Facility</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background-color: #f39c12;">📍</span>
+                        <span>Plastic Waste Collection</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h2>Layer Control</h2>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="layer-formal" checked>
+                        <span>Formal Collection Points</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="layer-informal" checked>
+                        <span>Informal Dumping Sites</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="layer-processing" checked>
+                        <span>Processing Facilities</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="layer-plastic" checked>
+                        <span>Plastic Waste Collection</span>
+                    </label>
+                </div>
+
+                <div class="sidebar-section">
+                    <h2>About the Project</h2>
+                    <p>The Circular Economy for Household Organic Waste (CE4HOW) project promotes sustainable household organic waste management in Kakamega Municipality through segregation at source, safe collection, and reuse of organic waste in composting and biogas production.</p>
+                    <p><strong>Key Partners:</strong></p>
+                    <ul>
+                        <li>Practical Action</li>
+                        <li>Regen Organics</li>
+                        <li>Kakamega County</li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <h2>Campaign Message</h2>
+                    <div class="campaign-message">
+                        <p><strong>"Taka ni Mali"</strong> - Waste is Wealth</p>
+                        <p>Segregate organic waste at source and contribute to a circular economy that creates environmental and economic value for our community.</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Map Container -->
+            <div class="map-wrapper">
+                <div id="map"></div>
+                <div class="map-info">
+                    <p>Click on markers to view detailed information about each waste management site.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Practical Action/CE4HOW. All rights reserved. | Developed for community engagement and waste management improvement.</p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
