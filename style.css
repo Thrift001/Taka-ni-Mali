@@ -84,7 +84,7 @@ body {
 .sidebar-section ul li {
     padding: 0.3rem 0;
     font-size: 0.9rem;
-    color: #555;
+    color: #fa0b0b;;
 }
 
 .sidebar-section ul li::before {
@@ -93,6 +93,46 @@ body {
     font-weight: bold;
     margin-right: 0.5rem;
 }
+
+/* About Project Section with Background Image */
+.about-project {
+    position: relative;
+    background-image: url("images/bird image.jpg");
+    background-size: cover;
+    background-position: center;
+    color: white; /* Ensure text is visible over dark background */
+    padding: 1.5rem; /* Adjust padding as needed */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.about-project::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Dark overlay with 50% opacity */
+    z-index: 1;
+}
+
+.about-project h2,
+.about-project p,
+.about-project ul {
+    position: relative;
+    z-index: 2; /* Ensure text is above the overlay */
+    color: rgb(254, 255, 255); /* Ensure text is white for contrast */
+}
+
+.about-project ul li::before {
+    color: white; /* Ensure checkmark is white */
+}
+
+.about-project strong {
+    color: white; /* Ensure strong text is white */
+}
+
 
 /* Legend Styles */
 .legend-item {
