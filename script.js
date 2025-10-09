@@ -1,18 +1,15 @@
-// Initialize the map centered on Kakamega Municipality
 const map = L.map('map').setView([0.2827, 34.7519], 13);
 
-// Add OpenStreetMap tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
     minZoom: 10
 }).addTo(map);
 
-// Define custom icons for different waste site types
 const icons = {
     formal: L.divIcon({
         className: 'custom-marker',
-        html: '<div style="background-color: #2ecc71; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;">📍</div>',
+        html: '<div style="background-color: #006400; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;">📍</div>',
         iconSize: [30, 30],
         iconAnchor: [15, 30],
         popupAnchor: [0, -30]
@@ -40,7 +37,6 @@ const icons = {
     })
 };
 
-// Waste collection data (GeoJSON format)
 const wasteData = {
     "type": "FeatureCollection",
     "features": [
@@ -52,7 +48,8 @@ const wasteData = {
                 "category": "Informal Dumping Site",
                 "description": "Main dumping site in Rosterman. Over 95% of waste arriving is mixed. County government collaborates with local community groups to manage the site.",
                 "status": "Active",
-                "challenges": "Mixed waste, lack of segregation at source"
+                "challenges": "Mixed waste, lack of segregation at source",
+                "image": "images/disposal worker.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -82,7 +79,8 @@ const wasteData = {
                 "category": "Formal Waste Receptacle",
                 "description": "Located near Khayenga Market. Managed by Khayenga Self Help Group. Compartments for biodegradable and non-biodegradable waste are clearly marked.",
                 "status": "Active",
-                "challenges": "Local community unaware of need to separate waste"
+                "challenges": "Local community unaware of need to separate waste",
+                "image": "images/khayega refuse.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -97,7 +95,8 @@ const wasteData = {
                 "category": "Formal Waste Receptacle",
                 "description": "Located in Lurambi Market. Operated by well-organized youth and community groups. Compartments for biodegradable and non-biodegradable waste.",
                 "status": "Active",
-                "challenges": "Waste often mixed despite compartmentalization"
+                "challenges": "Waste often mixed despite compartmentalization",
+                "image": "images/lurambi waste.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -127,7 +126,8 @@ const wasteData = {
                 "category": "Formal Waste Receptacle",
                 "description": "Located close to fresh food market. Majority of waste is organic. Informal dumping site exists nearby.",
                 "status": "Active",
-                "challenges": "Informal dumping site just 10 meters away"
+                "challenges": "Informal dumping site just 10 meters away",
+                "image": "images/bird image.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -197,7 +197,6 @@ const wasteData = {
     ]
 };
 
-// Create layer groups for different waste site types
 const layers = {
     formal: L.layerGroup(),
     informal: L.layerGroup(),
@@ -205,35 +204,34 @@ const layers = {
     plastic: L.layerGroup()
 };
 
-// Add all layers to the map initially
 Object.values(layers).forEach(layer => layer.addTo(map));
 
-// Process GeoJSON data and add markers to appropriate layers
 wasteData.features.forEach(feature => {
     const coords = feature.geometry.coordinates;
     const props = feature.properties;
     const type = props.type;
     
-    // Create popup content
-    const popupContent = `
+    let popupContent = `
         <div>
             <h3>${props.name}</h3>
             <p><strong>Category:</strong> ${props.category}</p>
             <p><strong>Status:</strong> ${props.status}</p>
             <p><strong>Description:</strong> ${props.description}</p>
             <p><strong>Challenges:</strong> ${props.challenges}</p>
-        </div>
     `;
+
+    if (props.image) {
+        popupContent += `<img src="${props.image}" alt="${props.name}" class="popup-image">`;
+    }
+
+    popupContent += `</div>`;
     
-    // Create marker with appropriate icon
     const marker = L.marker([coords[1], coords[0]], { icon: icons[type] })
         .bindPopup(popupContent);
     
-    // Add marker to appropriate layer
     layers[type].addLayer(marker);
 });
 
-// Layer control functionality
 document.getElementById('layer-formal').addEventListener('change', function(e) {
     if (e.target.checked) {
         map.addLayer(layers.formal);
@@ -266,13 +264,11 @@ document.getElementById('layer-plastic').addEventListener('change', function(e) 
     }
 });
 
-// Add scale control
 L.control.scale({
     imperial: false,
     metric: true
 }).addTo(map);
 
-// Add attribution
 map.attributionControl.addAttribution('CE4HOW Project | Practical Action & Regen Organics');
 
 console.log('Map initialized successfully with', wasteData.features.length, 'waste management sites.');
