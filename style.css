@@ -21,13 +21,13 @@ body {
 /* Header Styles */
 .header {
     background: #006400; /* Dark Green from Strategy Document */
-    color: white;
+    color: goldenrod;
     padding: 1.5rem 2rem;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .header-content h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     margin-bottom: 0.5rem;
     font-weight: 700;
 }
@@ -47,7 +47,7 @@ body {
 /* Sidebar Styles */
 .sidebar {
     width: 320px;
-    background-color: white;
+    background-color: rgb(255, 255, 255);
     padding: 1.5rem;
     overflow-y: auto;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
@@ -84,8 +84,9 @@ body {
 .sidebar-section ul li {
     padding: 0.3rem 0;
     font-size: 0.9rem;
-    color: #fa0b0b;;
-}
+    color: #ffc107;
+};
+
 
 .sidebar-section ul li::before {
     content: "✓ ";
@@ -176,10 +177,14 @@ body {
 
 /* Campaign Message */
 .campaign-message {
-    background: #f0fff0; /* Honeydew */
+    /*background-image: url("images/disposal\ worker.jpg");*/
     padding: 1rem;
     border-radius: 8px;
-    border-left: 4px solid #006400; /* Dark Green */
+    border-left: 6px solid #006400; /* Dark Green */
+    border-right: 6px solid #c49300;
+    border-bottom: 6px solid  #006400; /* Dark Green */;
+    border-top: 6px solid #c49300;
+
 }
 
 .campaign-message p {
@@ -215,12 +220,11 @@ body {
 
 /* Footer Styles */
 .footer {
-    background-color: #2c3e50;
-    color: white;
+    background-color:goldenrod;
+    color: darkgreen;
     text-align: center;
     padding: 1.5rem;
-    font-size: 0.9rem;
-}
+    font-size: 1.3rem;}
 
 /* Leaflet Popup Customization */
 .leaflet-popup-content-wrapper {
@@ -245,7 +249,7 @@ body {
 }
 
 .leaflet-popup-content strong {
-    color: #2c3e50;
+    color: goldenrod;
 }
 
 .popup-image {

@@ -49,7 +49,6 @@ const wasteData = {
                 "description": "Main dumping site in Rosterman. Over 95% of waste arriving is mixed. County government collaborates with local community groups to manage the site.",
                 "status": "Active",
                 "challenges": "Mixed waste, lack of segregation at source",
-                "image": "images/disposal worker.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -127,7 +126,6 @@ const wasteData = {
                 "description": "Located close to fresh food market. Majority of waste is organic. Informal dumping site exists nearby.",
                 "status": "Active",
                 "challenges": "Informal dumping site just 10 meters away",
-                "image": "images/bird image.jpg"
             },
             "geometry": {
                 "type": "Point",
