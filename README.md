@@ -14,6 +14,15 @@ This web map visualizes waste collection points, processing facilities, and comm
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 - **Offline Capability**: Can be hosted locally without internet connection
 
+## How to Use the Map
+-- **Explore Sites**: Use the map to pan and zoom to different areas.
+- **Toggle Layers**: Use the checkboxes on the left to show or hide different categories of waste sites.
+- **View Details**: Click on any site marker (📍) to see a popup with its name, description, and status.
+- **Get Directions**:
+Inside the popup, click the "Get Directions" button.
+Your browser will ask for permission to access your location. Click "Allow".
+A route will be calculated and drawn on the map from your current location to the selected site.
+
 ## Hosting Options
 
 ### Option 1: Local Hosting (Offline)
