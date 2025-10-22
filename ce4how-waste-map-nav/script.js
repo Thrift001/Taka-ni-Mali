@@ -1,10 +1,33 @@
-const map = L.map('map').setView([0.2827, 34.7519], 13);
+const map = L.map('map'); // Initialize map without setting the view yet
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
     minZoom: 10
 }).addTo(map);
+
+// --- START: Load and Display Kakamega County GeoJSON ---
+fetch('Kakamega County.geojson')
+    .then(response => response.json()) // Parse the JSON from the response
+    .then(data => {
+        // Create a GeoJSON layer for the Area of Interest (AOI)
+        const aoiLayer = L.geoJSON(data, {
+            style: {
+                color: "black",     // Outline color
+                weight: 2,          // Outline width
+                opacity: 1,         // Outline opacity
+                fillOpacity: 0      // No fill
+            }
+        });
+
+        // Add the AOI layer to the map
+        aoiLayer.addTo(map);
+
+        
+    })
+    .catch(error => console.error('Error loading the GeoJSON file:', error));
+// --- END: Load and Display Kakamega County GeoJSON ---
+
 
 const icons = {
     formal: L.divIcon({
@@ -40,7 +63,7 @@ const icons = {
 const wasteData = {
     "type": "FeatureCollection",
     "features": [
-        {
+         {
             "type": "Feature",
             "properties": {
                 "name": "Rosterman Dumpsite",
@@ -49,6 +72,7 @@ const wasteData = {
                 "description": "Main dumping site in Rosterman. Over 95% of waste arriving is mixed. County government collaborates with local community groups to manage the site.",
                 "status": "Active",
                 "challenges": "Mixed waste, lack of segregation at source",
+                "image": "images/disposal worker.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -126,6 +150,7 @@ const wasteData = {
                 "description": "Located close to fresh food market. Majority of waste is organic. Informal dumping site exists nearby.",
                 "status": "Active",
                 "challenges": "Informal dumping site just 10 meters away",
+                "image": "images/bird image.jpg"
             },
             "geometry": {
                 "type": "Point",
@@ -195,6 +220,13 @@ const wasteData = {
     ]
 };
 
+
+// 1. Create a layer from your wasteData to get its collective bounds.
+const wasteSitesLayer = L.geoJSON(wasteData);
+
+// 2. Set the map's initial view to fit the bounds of your dumpsites.
+map.fitBounds(wasteSitesLayer.getBounds());
+
 const layers = {
     formal: L.layerGroup(),
     informal: L.layerGroup(),
@@ -216,6 +248,7 @@ wasteData.features.forEach(feature => {
             <p><strong>Status:</strong> ${props.status}</p>
             <p><strong>Description:</strong> ${props.description}</p>
             <p><strong>Challenges:</strong> ${props.challenges}</p>
+            <button class="get-directions-btn" data-lat="${coords[1]}" data-lon="${coords[0]}">Get Directions</button>
     `;
 
     if (props.image) {
@@ -269,4 +302,121 @@ L.control.scale({
 
 map.attributionControl.addAttribution('CE4HOW Project | Practical Action & Regen Organics');
 
-console.log('Map initialized successfully with', wasteData.features.length, 'waste management sites.');
+console.log("Map initialized successfully with", wasteData.features.length, "waste management sites.");
+
+// Add event listener for Get Directions buttons
+document.addEventListener("click", function(e) {
+    if (e.target && e.target.matches(".get-directions-btn")) {
+        const destLat = parseFloat(e.target.dataset.lat);
+        const destLon = parseFloat(e.target.dataset.lon);
+        
+        // Request user's current location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const startLat = position.coords.latitude;
+                const startLon = position.coords.longitude;
+
+                if (window.routingControl) {
+                    map.removeControl(window.routingControl);
+                }
+
+                // Step 1: Define a custom Plan class to add the button (from previous update)
+                const CustomPlan = L.Routing.Plan.extend({
+                    createGeocoders: function() {
+                        const container = L.Routing.Plan.prototype.createGeocoders.call(this);
+                        
+                        const calculateButton = L.DomUtil.create('button', 'leaflet-routing-calculate-button', container);
+                        calculateButton.setAttribute('type', 'button');
+                        calculateButton.innerHTML = 'Calculate Route';
+                        
+                        L.DomEvent.on(calculateButton, 'click', function() {
+                            window.routingControl.route();
+                        });
+
+                        return container;
+                    }
+                });
+
+                // Step 2: Create an instance of the custom plan
+                const customPlan = new CustomPlan([
+                    L.latLng(startLat, startLon),
+                    L.latLng(destLat, destLon)
+                ], {
+                    geocoder: L.Control.Geocoder.nominatim({ serviceUrl: 'https://nominatim.openstreetmap.org/search/' }),
+                    addWaypoints: true,
+                    draggableWaypoints: true
+                });
+
+                // Step 3: Create the routing control
+                window.routingControl = L.Routing.control({
+                    plan: customPlan,
+                    waypoints: [
+                        L.latLng(startLat, startLon),
+                        L.latLng(destLat, destLon)
+                    ],
+                    routeWhileDragging: true,
+                    autoRoute: false,
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    }),
+                    showAlternatives: false,
+                    altLineOptions: {
+                        styles: [
+                            {color: 'black', opacity: 0.15, weight: 9},
+                            {color: 'white', opacity: 0.8, weight: 6},
+                            {color: 'blue', opacity: 0.5, weight: 2}
+                        ]
+                    }
+                }).addTo(map);
+
+                // NEW: Create a loading indicator element (dynamic div)
+                let loadingDiv = document.createElement('div');
+                loadingDiv.id = 'routing-loading-indicator';
+                loadingDiv.style.position = 'absolute';
+                loadingDiv.style.top = '50%';
+                loadingDiv.style.left = '50%';
+                loadingDiv.style.transform = 'translate(-50%, -50%)';
+                loadingDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                loadingDiv.style.padding = '20px';
+                loadingDiv.style.borderRadius = '8px';
+                loadingDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                loadingDiv.style.zIndex = '1000';  // Ensure it's on top
+                loadingDiv.style.display = 'none';  // Hidden by default
+                loadingDiv.innerHTML = '<p style="font-size: 16px; margin: 0;">Please wait as route is being calculated...</p>';
+                document.body.appendChild(loadingDiv);  // Or append to map.getContainer() for map-only overlay
+
+                // NEW: Attach event listeners for loading popup
+                window.routingControl.on('routingstart', function() {
+                    loadingDiv.style.display = 'block';  // Show on start
+                });
+
+                window.routingControl.on('routesfound', function() {
+                    loadingDiv.style.display = 'none';  // Hide on success
+                });
+
+                window.routingControl.on('routingerror', function() {
+                    loadingDiv.style.display = 'none';  // Hide on error
+                    alert('Error calculating route. Please try again.');  // Optional user feedback
+                });
+
+                // Manually trigger initial route calculation (optional)
+                window.routingControl.route();
+
+                // Close all popups
+                map.closePopup();
+
+                // Cleanup: Remove loading div when control is removed (good practice)
+                window.routingControl.on('remove', function() {
+                    if (loadingDiv && loadingDiv.parentNode) {
+                        loadingDiv.parentNode.removeChild(loadingDiv);
+                    }
+                });
+
+            }, function(error) {
+                alert("Geolocation failed: " + error.message + ". Please allow location access or manually set your start point.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser. Please manually set your start point.");
+        }
+    }
+});
