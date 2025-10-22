@@ -1,59 +1,36 @@
-const map = L.map('map'); // Initialize map without setting the view yet
+const map = L.map("map");
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
     maxZoom: 19,
     minZoom: 10
 }).addTo(map);
 
-// --- START: Load and Display Kakamega County GeoJSON ---
-fetch('Kakamega County.geojson')
-    .then(response => response.json()) // Parse the JSON from the response
-    .then(data => {
-        // Create a GeoJSON layer for the Area of Interest (AOI)
-        const aoiLayer = L.geoJSON(data, {
-            style: {
-                color: "black",     // Outline color
-                weight: 2,          // Outline width
-                opacity: 1,         // Outline opacity
-                fillOpacity: 0      // No fill
-            }
-        });
-
-        // Add the AOI layer to the map
-        aoiLayer.addTo(map);
-
-        
-    })
-    .catch(error => console.error('Error loading the GeoJSON file:', error));
-// --- END: Load and Display Kakamega County GeoJSON ---
-
-
 const icons = {
     formal: L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background-color: #006400; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;">📍</div>',
+        className: "custom-marker",
+        html: "<div style=\"background-color: #006400; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;\">📍</div>",
         iconSize: [30, 30],
         iconAnchor: [15, 30],
         popupAnchor: [0, -30]
     }),
     informal: L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background-color: #e74c3c; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;">📍</div>',
+        className: "custom-marker",
+        html: "<div style=\"background-color: #e74c3c; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;\">📍</div>",
         iconSize: [30, 30],
         iconAnchor: [15, 30],
         popupAnchor: [0, -30]
     }),
     processing: L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background-color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;">📍</div>',
+        className: "custom-marker",
+        html: "<div style=\"background-color: #3498db; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;\">📍</div>",
         iconSize: [30, 30],
         iconAnchor: [15, 30],
         popupAnchor: [0, -30]
     }),
     plastic: L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background-color: #f39c12; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;">📍</div>',
+        className: "custom-marker",
+        html: "<div style=\"background-color: #f39c12; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 18px;\">📍</div>",
         iconSize: [30, 30],
         iconAnchor: [15, 30],
         popupAnchor: [0, -30]
@@ -63,7 +40,7 @@ const icons = {
 const wasteData = {
     "type": "FeatureCollection",
     "features": [
-         {
+        {
             "type": "Feature",
             "properties": {
                 "name": "Rosterman Dumpsite",
@@ -220,13 +197,6 @@ const wasteData = {
     ]
 };
 
-
-// 1. Create a layer from your wasteData to get its collective bounds.
-const wasteSitesLayer = L.geoJSON(wasteData);
-
-// 2. Set the map's initial view to fit the bounds of your dumpsites.
-map.fitBounds(wasteSitesLayer.getBounds());
-
 const layers = {
     formal: L.layerGroup(),
     informal: L.layerGroup(),
@@ -248,6 +218,109 @@ wasteData.features.forEach(feature => {
             <p><strong>Status:</strong> ${props.status}</p>
             <p><strong>Description:</strong> ${props.description}</p>
             <p><strong>Challenges:</strong> ${props.challenges}</p>
+            <button class="get-directions-btn" data-lat="${coords[1]}" data-lon="${coords[0]}">Get Directions</button>
+    `;
+
+    if (props.image) {
+        popupContent += `<img src="${props.image}" alt="${props.name}" class="popup-image">`;
+    }
+
+    popupContent += `</div>`;
+    
+    const marker = L.marker([coords[1], coords[0]], { icon: icons[type] })
+        .bindPopup(popupContent);
+    
+    layers[type].addLayer(marker);
+});
+
+document.getElementById("layer-formal").addEventListener("change", function(e) {
+    if (e.target.checked) {
+        map.addLayer(layers.formal);
+    } else {
+        map.removeLayer(layers.formal);
+    }
+});
+
+document.getElementById("layer-informal").addEventListener("change", function(e) {
+    if (e.target.checked) {
+        map.addLayer(layers.informal);
+    } else {
+        map.removeLayer(layers.informal);
+    }
+});
+
+document.getElementById("layer-processing").addEventListener("change", function(e) {
+    if (e.target.checked) {
+        map.addLayer(layers.processing);
+    } else {
+        map.removeLayer(layers.processing);
+    }
+});
+
+document.getElementById("layer-plastic").addEventListener("change", function(e) {
+    if (e.target.checked) {
+        map.addLayer(layers.plastic);
+    } else {
+        map.removeLayer(layers.plastic);
+    }
+});
+
+L.control.scale({
+    imperial: false,
+    metric: true
+}).addTo(map);
+
+map.attributionControl.addAttribution("CE4HOW Project | Practical Action & Regen Organics");
+
+console.log("Map initialized successfully with", wasteData.features.length, "waste management sites.");
+
+// Fit map to the bounds of all waste data points initially
+map.fitBounds(L.featureGroup(wasteData.features.map(feature => L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]))).getBounds().pad(0.1));
+
+// Add event listener for Get Directions buttons
+document.addEventListener("click", function(e) {
+    if (e.target && e.target.matches(".get-directions-btn")) {
+        const destLat = parseFloat(e.target.dataset.lat);
+        const destLon = parseFloat(e.target.dataset.lon);
+        
+        // Request user's current location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const startLat = position.coords.latitude;
+                const startLon = position.coords.longitude;
+
+                const routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(startLat, startLon),
+                        L.latLng(destLat, destLon)
+                    ],
+                    routeWhileDragging: true,
+                    geocoder: L.Control.Geocoder.nominatim(),
+                    router: L.Routing.osrmv1({
+                        serviceUrl: "https://router.project-osrm.org/route/v1"
+                    }),
+                    showAlternatives: false,
+                    altLineOptions: {
+                        styles: [
+                            {color: "black", opacity: 0.15, weight: 9},
+                            {color: "white", opacity: 0.8, weight: 6},
+                            {color: "blue", opacity: 0.5, weight: 2}
+                        ]
+                    },
+                    fitSelectedRoutes: true // Automatically zoom and pan to fit the route
+                }).addTo(map);
+
+                // Close all popups after routing starts
+                map.closePopup();
+
+            }, function(error) {
+                alert("Geolocation failed: " + error.message + ". Please allow location access or manually set your start point.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser. Please manually set your start point.");
+        }
+    }
+});p><strong>Challenges:</strong> ${props.challenges}</p>
             <button class="get-directions-btn" data-lat="${coords[1]}" data-lon="${coords[0]}">Get Directions</button>
     `;
 
