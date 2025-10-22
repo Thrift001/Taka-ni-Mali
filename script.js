@@ -3,7 +3,7 @@ const map = L.map('map'); // Initialize map without setting the view yet
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
-    minZoom: 10
+    minZoom: 2,
 }).addTo(map);
 
 // --- START: Load and Display Kakamega County GeoJSON ---
@@ -304,40 +304,36 @@ map.attributionControl.addAttribution('CE4HOW Project | Practical Action & Regen
 
 console.log("Map initialized successfully with", wasteData.features.length, "waste management sites.");
 
-// Add event listener for Get Directions buttons
+// --- ROUTING AND ZOOM HANDLING ---
 document.addEventListener("click", function(e) {
     if (e.target && e.target.matches(".get-directions-btn")) {
         const destLat = parseFloat(e.target.dataset.lat);
         const destLon = parseFloat(e.target.dataset.lon);
-        
-        // Request user's current location
+
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
                 const startLat = position.coords.latitude;
                 const startLon = position.coords.longitude;
 
+                // Remove previous route
                 if (window.routingControl) {
                     map.removeControl(window.routingControl);
                 }
 
-                // Step 1: Define a custom Plan class to add the button 
+                // Custom plan (keeps your calculate button)
                 const CustomPlan = L.Routing.Plan.extend({
                     createGeocoders: function() {
                         const container = L.Routing.Plan.prototype.createGeocoders.call(this);
-                        
                         const calculateButton = L.DomUtil.create('button', 'leaflet-routing-calculate-button', container);
                         calculateButton.setAttribute('type', 'button');
                         calculateButton.innerHTML = 'Calculate Route';
-                        
                         L.DomEvent.on(calculateButton, 'click', function() {
                             window.routingControl.route();
                         });
-
                         return container;
                     }
                 });
 
-                // Step 2: Create an instance of the custom plan
                 const customPlan = new CustomPlan([
                     L.latLng(startLat, startLon),
                     L.latLng(destLat, destLon)
@@ -347,7 +343,7 @@ document.addEventListener("click", function(e) {
                     draggableWaypoints: true
                 });
 
-                // Step 3: Create the routing control
+                // Routing control
                 window.routingControl = L.Routing.control({
                     plan: customPlan,
                     waypoints: [
@@ -360,63 +356,74 @@ document.addEventListener("click", function(e) {
                         serviceUrl: 'https://router.project-osrm.org/route/v1'
                     }),
                     showAlternatives: false,
-                    altLineOptions: {
+                    lineOptions: {
                         styles: [
-                            {color: 'black', opacity: 0.15, weight: 9},
-                            {color: 'white', opacity: 0.8, weight: 6},
-                            {color: 'blue', opacity: 0.5, weight: 2}
+                            { color: 'black', opacity: 0.15, weight: 9 },
+                            { color: 'white', opacity: 0.8, weight: 6 },
+                            { color: '#007bff', opacity: 0.7, weight: 4 }
                         ]
                     }
                 }).addTo(map);
 
-                // NEW: Create a loading indicator element (dynamic div)
+                // Loading overlay
                 let loadingDiv = document.createElement('div');
                 loadingDiv.id = 'routing-loading-indicator';
                 loadingDiv.style.position = 'absolute';
                 loadingDiv.style.top = '50%';
                 loadingDiv.style.left = '50%';
                 loadingDiv.style.transform = 'translate(-50%, -50%)';
-                loadingDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                loadingDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
                 loadingDiv.style.padding = '20px';
                 loadingDiv.style.borderRadius = '8px';
                 loadingDiv.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-                loadingDiv.style.zIndex = '1000';  // Ensure it's on top
-                loadingDiv.style.display = 'none';  // Hidden by default
-                loadingDiv.innerHTML = '<p style="font-size: 16px; margin: 0;">Please wait as route is being calculated...</p>';
-                document.body.appendChild(loadingDiv);  // Or append to map.getContainer() for map-only overlay
+                loadingDiv.style.zIndex = '1000';
+                loadingDiv.style.display = 'none';
+                loadingDiv.innerHTML = '<p style="font-size: 16px; margin: 0;">Calculating route...</p>';
+                document.body.appendChild(loadingDiv);
 
-                // NEW: Attach event listeners for loading popup
                 window.routingControl.on('routingstart', function() {
-                    loadingDiv.style.display = 'block';  // Show on start
+                    loadingDiv.style.display = 'block';
                 });
 
-                window.routingControl.on('routesfound', function() {
-                    loadingDiv.style.display = 'none';  // Hide on success
+                // ✅ Zoom map to show both points (user + destination)
+                window.routingControl.on('routesfound', function(e) {
+                    loadingDiv.style.display = 'none';
+                    const route = e.routes[0];
+                    const routeBounds = L.latLngBounds(route.coordinates);
+
+                    // Also include user + dest points in case OSRM returns a partial line
+                    routeBounds.extend([startLat, startLon]);
+                    routeBounds.extend([destLat, destLon]);
+
+                    // Zoom map to include both ends — no restriction on zoom-out
+                    map.fitBounds(routeBounds, {
+                    padding: [100, 100],
+                    maxZoom: 14 // keeps overview wide enough
+                });
+
                 });
 
                 window.routingControl.on('routingerror', function() {
-                    loadingDiv.style.display = 'none';  // Hide on error
-                    alert('Error calculating route. Please try again.');  // Optional user feedback
+                    loadingDiv.style.display = 'none';
+                    alert('Error calculating route. Please try again.');
                 });
 
-                // Manually trigger initial route calculation (optional)
-                window.routingControl.route();
-
-                // Close all popups
                 map.closePopup();
 
-                // Cleanup: Remove loading div when control is removed (good practice)
                 window.routingControl.on('remove', function() {
                     if (loadingDiv && loadingDiv.parentNode) {
                         loadingDiv.parentNode.removeChild(loadingDiv);
                     }
                 });
 
+                // Kick off route
+                window.routingControl.route();
+
             }, function(error) {
-                alert("Geolocation failed: " + error.message + ". Please allow location access or manually set your start point.");
+                alert("Geolocation failed: " + error.message + ". Please allow location access.");
             });
         } else {
-            alert("Geolocation is not supported by your browser. Please manually set your start point.");
+            alert("Geolocation not supported by your browser.");
         }
     }
 });
