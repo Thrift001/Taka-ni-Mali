@@ -320,7 +320,7 @@ document.addEventListener("click", function(e) {
                     map.removeControl(window.routingControl);
                 }
 
-                // Step 1: Define a custom Plan class to add the button (from previous update)
+                // Step 1: Define a custom Plan class to add the button 
                 const CustomPlan = L.Routing.Plan.extend({
                     createGeocoders: function() {
                         const container = L.Routing.Plan.prototype.createGeocoders.call(this);
